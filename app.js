@@ -6,9 +6,6 @@ const port = 3000;
 
 app.use(express.json());
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
-);
 const toursJSON = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
@@ -16,9 +13,9 @@ const toursJSON = JSON.parse(
 app.get('/api/v1/tours', (req, res) => {
   res.status(200).json({
     status: 'success',
-    results: tours.length,
+    results: toursJSON.length,
     data: {
-      tours: tours,
+      tour,
     },
   });
 });
@@ -47,6 +44,15 @@ app.post('/api/v1/tours', (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);
   tours.push(newTour);
+  const newId = toursJSON[toursJSON.length - 1].id + 1;
+  const newTour = Object.assign(
+    {
+      id: newId,
+    },
+    req.body
+  );
+
+  toursJSON.push(newTour);
 
   fs.promises
     .writeFile(
@@ -67,6 +73,18 @@ app.post('/api/v1/tours', (req, res) => {
         message: 'Failed to save the new tour',
       });
     });
+  fs.writeFile(
+    `${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(toursJSON),
+    (err) => {
+      res.status(201).json({
+        status: 'success',
+        data: {
+          tour: newTour,
+        },
+      });
+    }
+  );
 });
 
 app.listen(port, () => {
