@@ -6,16 +6,16 @@ const port = 3000;
 
 app.use(express.json());
 
-const toursJSON = JSON.parse(
+const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
 app.get('/api/v1/tours', (req, res) => {
   res.status(200).json({
     status: 'success',
-    results: toursJSON.length,
+    results: tours.length,
     data: {
-      tour,
+      tours,
     },
   });
 });
@@ -23,14 +23,14 @@ app.get('/api/v1/tours', (req, res) => {
 app.get('/api/v1/tours/:id', (req, res) => {
   const id = req.params.id * 1;
 
-  if (id > toursJSON.length) {
+  if (id > tours.length) {
     return res.status(404).json({
       status: 'failed',
       message: 'Invalid ID',
     });
   }
 
-  const tour = toursJSON.find((item) => item.id === id);
+  const tour = tours.find((item) => item.id === id);
 
   res.status(200).json({
     status: 'success',
@@ -44,15 +44,6 @@ app.post('/api/v1/tours', (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);
   tours.push(newTour);
-  const newId = toursJSON[toursJSON.length - 1].id + 1;
-  const newTour = Object.assign(
-    {
-      id: newId,
-    },
-    req.body
-  );
-
-  toursJSON.push(newTour);
 
   fs.promises
     .writeFile(
@@ -75,7 +66,7 @@ app.post('/api/v1/tours', (req, res) => {
     });
   fs.writeFile(
     `${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(toursJSON),
+    JSON.stringify(tours),
     (err) => {
       res.status(201).json({
         status: 'success',
