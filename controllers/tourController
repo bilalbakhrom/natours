@@ -1,8 +1,6 @@
 const fs = require('node:fs');
 
-const tours = JSON.parse(
-  fs.readFileSync(`./dev-data/data/tours-simple.json`)
-);
+const tours = JSON.parse(fs.readFileSync(`./dev-data/data/tours-simple.json`));
 
 const checkID = (req, res, next, val) => {
   if (val > tours.length) {
@@ -49,12 +47,12 @@ const getTour = (req, res) => {
 
 const createTour = (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
-  const newTour = Object.assign({ id: newId }, req.body);
+  const newTour = Object.assign(req.body, { id: newId });
 
   fs.promises
     .writeFile(
       `${__dirname}/../dev-data/data/tours-simple.json`,
-      JSON.stringify(tours)
+      JSON.stringify(tours),
     )
     .then(() => {
       tours.push(newTour);
@@ -65,7 +63,7 @@ const createTour = (req, res) => {
         },
       });
     })
-    .catch((err) => {
+    .catch(() => {
       res.status(500).json({
         status: 'error',
         message: 'Failed to save the new tour',
@@ -74,8 +72,6 @@ const createTour = (req, res) => {
 };
 
 const updateTour = (req, res) => {
-  const newId = tours[tours.length - 1].id + 1;
-
   res.status(200).json({
     status: 'success',
     data: {
@@ -88,19 +84,19 @@ const deleteTour = (req, res) => {
   const id = req.params.id * 1;
   const index = tours.findIndex((item) => item.id === id);
 
-  if (id == -1) {
+  if (id === -1) {
     return res.status(500).json({
       status: 'error',
       message: 'Invalid ID',
     });
   }
-  console.log(`the tour at ${index}: ${tours[index]}`);
+
   tours.splice(index, 1);
 
   fs.promises
     .writeFile(
       `${__dirname}/../dev-data/data/tours-simple.json`,
-      JSON.stringify(tours)
+      JSON.stringify(tours),
     )
     .then(() => {
       res.status(204).json({
@@ -108,7 +104,7 @@ const deleteTour = (req, res) => {
         data: null,
       });
     })
-    .catch((err) => {
+    .catch(() => {
       res.status(500).json({
         status: 'error',
         message: 'Failed to save the new tour',
