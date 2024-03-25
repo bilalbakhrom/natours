@@ -34,9 +34,7 @@ app.get('/api/v1/tours/:id', (req, res) => {
 
   res.status(200).json({
     status: 'success',
-    data: {
-      tour,
-    },
+    data: { tour },
   });
 });
 
@@ -64,18 +62,6 @@ app.post('/api/v1/tours', (req, res) => {
         message: 'Failed to save the new tour',
       });
     });
-  fs.writeFile(
-    `${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    (err) => {
-      res.status(201).json({
-        status: 'success',
-        data: {
-          tour: newTour,
-        },
-      });
-    }
-  );
 });
 
 app.listen(port, () => {
