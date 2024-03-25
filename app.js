@@ -41,7 +41,59 @@ app.get('/api/v1/tours/:id', (req, res) => {
 app.post('/api/v1/tours', (req, res) => {
   const newId = tours[tours.length - 1].id + 1;
   const newTour = Object.assign({ id: newId }, req.body);
-  tours.push(newTour);
+
+  fs.promises
+    .writeFile(
+      `${__dirname}/dev-data/data/tours-simple.json`,
+      JSON.stringify(tours)
+    )
+    .then(() => {
+      tours.push(newTour);
+      res.status(201).json({
+        status: 'success',
+        data: {
+          tour: newTour,
+        },
+      });
+    })
+    .catch((err) => {
+      res.status(500).json({
+        status: 'error',
+        message: 'Failed to save the new tour',
+      });
+    });
+});
+
+app.patch('/api/v1/tours/:id', (req, res) => {
+  const newId = tours[tours.length - 1].id + 1;
+
+  if (newId > tours.length) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Invalid ID',
+    });
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour: '<Updated tour here..>',
+    },
+  });
+});
+
+app.delete('/api/v1/tours/:id', (req, res) => {
+  const id = req.params.id * 1;
+  const index = tours.findIndex((item) => item.id === id);
+
+  if (id == -1) {
+    return res.status(500).json({
+      status: 'error',
+      message: 'Invalid ID',
+    });
+  }
+  console.log(`the tour at ${index}: ${tours[index]}`);
+  tours.splice(index, 1);
 
   fs.promises
     .writeFile(
@@ -51,9 +103,7 @@ app.post('/api/v1/tours', (req, res) => {
     .then(() => {
       res.status(201).json({
         status: 'success',
-        data: {
-          tour: newTour,
-        },
+        message: 'The tour removed succesfylly.',
       });
     })
     .catch((err) => {
