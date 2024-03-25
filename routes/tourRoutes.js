@@ -4,6 +4,8 @@ const fs = require('node:fs');
 
 const router = express.Router();
 
+router.param('id', tourController.checkID);
+
 router
   .route('/')
   .get(tourController.getAllTours)
