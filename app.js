@@ -101,9 +101,9 @@ app.delete('/api/v1/tours/:id', (req, res) => {
       JSON.stringify(tours)
     )
     .then(() => {
-      res.status(201).json({
+      res.status(204).json({
         status: 'success',
-        message: 'The tour removed succesfylly.',
+        data: null,
       });
     })
     .catch((err) => {
