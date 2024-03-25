@@ -9,6 +9,9 @@ app.use(express.json());
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
+const toursJSON = JSON.parse(
+  fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
+);
 
 app.get('/api/v1/tours', (req, res) => {
   res.status(200).json({
@@ -16,6 +19,26 @@ app.get('/api/v1/tours', (req, res) => {
     results: tours.length,
     data: {
       tours: tours,
+    },
+  });
+});
+
+app.get('/api/v1/tours/:id', (req, res) => {
+  const id = req.params.id * 1;
+
+  if (id > toursJSON.length) {
+    return res.status(404).json({
+      status: 'failed',
+      message: 'Invalid ID',
+    });
+  }
+
+  const tour = toursJSON.find((item) => item.id === id);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour,
     },
   });
 });
