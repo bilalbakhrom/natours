@@ -14,6 +14,19 @@ const checkID = (req, res, next, val) => {
   next();
 };
 
+const checkBody = (req, res, next) => {
+  const { name, price } = req.body;
+
+  if (name && price) {
+    next();
+  } else {
+    return res.status(400).json({
+      status: 'failed',
+      message: 'Body must contain name and price.',
+    });
+  }
+};
+
 const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -40,7 +53,7 @@ const createTour = (req, res) => {
 
   fs.promises
     .writeFile(
-      `${__dirname}/dev-data/data/tours-simple.json`,
+      `${__dirname}/../dev-data/data/tours-simple.json`,
       JSON.stringify(tours)
     )
     .then(() => {
@@ -86,7 +99,7 @@ const deleteTour = (req, res) => {
 
   fs.promises
     .writeFile(
-      `${__dirname}/dev-data/data/tours-simple.json`,
+      `${__dirname}/../dev-data/data/tours-simple.json`,
       JSON.stringify(tours)
     )
     .then(() => {
@@ -110,4 +123,5 @@ module.exports = {
   updateTour,
   deleteTour,
   checkID,
+  checkBody,
 };
