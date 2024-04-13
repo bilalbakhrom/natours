@@ -56,7 +56,7 @@ const createTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: 'error',
-      message: 'Data must be sent correctly!',
+      message: `Data must be sent correctly: ${err}`,
     });
   }
 };
