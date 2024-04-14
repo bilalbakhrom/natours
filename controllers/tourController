@@ -41,7 +41,7 @@ const getTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: 'error',
-      message: 'Data must be sent correctly!',
+      message: `Data must be sent correctly: ${err}`,
     });
   }
 };
@@ -74,7 +74,7 @@ const updateTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: 'error',
-      message: 'Data must be sent correctly!',
+      message: `Data must be sent correctly: ${err}`,
     });
   }
 };
@@ -92,7 +92,38 @@ const deleteTour = async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: 'error',
-      message: 'Data must be sent correctly!',
+      message: `Data must be sent correctly: ${err}`,
+    });
+  }
+};
+
+const getTourStats = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      {
+        $group: {
+          _id: null,
+          total_tours: { $sum: 1 },
+          avg_rating: { $avg: '$ratingsAverage' },
+          min_price: { $min: '$price' },
+          max_price: { $max: '$price' },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: { stats },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'error',
+      message: `Something went wrong: ${err}`,
     });
   }
 };
@@ -103,4 +134,5 @@ module.exports = {
   createTour,
   updateTour,
   deleteTour,
+  getTourStats,
 };
