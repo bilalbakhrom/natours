@@ -26,15 +26,6 @@ const getUser = catchAsync(async (req, res, next) => {
   });
 });
 
-const createUser = catchAsync(async (req, res, next) => {
-  const user = await User.create(req.body);
-
-  res.status(200).json({
-    status: 'success',
-    data: { user },
-  });
-});
-
 const updateUser = catchAsync(async (req, res, next) => {
   const user = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -70,7 +61,6 @@ const deleteUser = catchAsync(async (req, res, next) => {
 module.exports = {
   getAllUsers,
   getUser,
-  createUser,
   updateUser,
   deleteUser,
 };
