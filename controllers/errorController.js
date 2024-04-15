@@ -30,7 +30,17 @@ const handleCastErrorDB = (err) => {
 
 const handleDuplciateFieldsDB = (err) => {
   let value = err.errmsg.match(/([""'])(\\?.)*?\1/);
+  value = value.toString().replace(/["\\]/g, '');
   const message = `Duplicate field value: ${value}. Please use anthoer value!`;
+
+  return new AppError(message, 400);
+};
+
+const handleValidationErrorDB = (err) => {
+  const message = Object.values(err.errors)
+    .map((item) => item.message)
+    .join('. ');
+
   return new AppError(message, 400);
 };
 
@@ -38,9 +48,11 @@ module.exports = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || 'error';
   let error = { ...err };
+  error.message = err.message;
 
-  if (error.name === 'CastError') error = handleCastErrorDB(err);
-  if (error.code === 1100) error = handleDuplciateFieldsDB(err);
+  if (err.name === 'CastError') error = handleCastErrorDB(err);
+  if (err.code === 11000) error = handleDuplciateFieldsDB(err);
+  if (err.name === 'ValidationError') error = handleValidationErrorDB(err);
 
   if (process.env.NODE_ENV == 'development') {
     sendErrorDev(error, res);
