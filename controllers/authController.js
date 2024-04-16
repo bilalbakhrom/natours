@@ -16,22 +16,16 @@ const signJWT = (id) => {
 
 const getUserByToken = async (token) => {
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  const user = await User.findById(decoded.id);
+  const user = await User.findById(decoded.id).select('+password');
 
   return { user: user, jwtIssued: decoded.iat };
 };
 
-const getTokenFromHeader = (headers, next) => {
+const getTokenFromHeader = (headers) => {
   let token;
 
   if (headers.authorization && headers.authorization.startsWith('Bearer')) {
     token = headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
-    return next(
-      new AppError('You are not logged in. Please log in to get access', 401),
-    );
   }
 
   return token;
@@ -135,6 +129,12 @@ const protect = catchAsync(async (req, res, next) => {
   const token = getTokenFromHeader(req.headers);
   const { user, jwtIssued } = await getUserByToken(token);
 
+  if (!token) {
+    return next(
+      new AppError('You are not logged in. Please log in to get access', 401),
+    );
+  }
+
   if (!user) {
     return next(
       new AppError(
@@ -166,7 +166,43 @@ const restrictTo = (...roles) => {
   };
 };
 
-const updatePassword = (req, res, next) => {};
+const updatePassword = catchAsync(async (req, res, next) => {
+  const token = getTokenFromHeader(req.headers);
+  const { user } = await getUserByToken(token);
+  const { passwordCurrent, password, passwordConfirm } = req.body;
+
+  if (!user) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist',
+        404,
+      ),
+    );
+  }
+  if (!passwordCurrent || !password || !passwordConfirm) {
+    return next(
+      new AppError('Please specifiy new password and old password'),
+      403,
+    );
+  }
+  if (password !== passwordConfirm) {
+    return next(new AppError('Old passwords are not the same', 403));
+  }
+  if (!(await user.correctPassword(passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is wrong', 401));
+  }
+
+  user.password = password;
+  user.passwordConfirm = passwordConfirm;
+  await user.save();
+
+  const newToken = signJWT(user.id);
+
+  res.status(201).json({
+    status: 'success',
+    token: newToken,
+  });
+});
 
 module.exports = {
   signup,
@@ -175,4 +211,5 @@ module.exports = {
   resetPassword,
   protect,
   restrictTo,
+  updatePassword,
 };
